@@ -242,8 +242,9 @@ function handleEvent(api: OpenClawPluginApi, cfg: AgentMailConfig, event: WebSoc
 
     try {
       api.runtime.system.enqueueSystemEvent(eventText, {
-        sessionKey: cfg.sessionKey ?? "main",
+        sessionKey: cfg.sessionKey ?? "agent:main:main",
         contextKey: `agentmail:${messageId}`,
+        wakeMode: "now",
       });
     } catch (err) {
       api.logger.error(`agentmail-listener: failed to enqueue system event: ${String(err)}`);
