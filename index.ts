@@ -39,7 +39,7 @@ export default function register(api: OpenClawPluginApi): void {
   api.registerService({
     id: "agentmail-listener",
     start: async () => {
-      const cfg = api.config as { apiKey?: string; inboxId?: string; eventTypes?: string[]; sessionKey?: string } | undefined;
+      const cfg = (api.pluginConfig ?? api.config) as { apiKey?: string; inboxId?: string; eventTypes?: string[]; sessionKey?: string } | undefined;
 
       if (!cfg?.apiKey) {
         api.logger.warn("agentmail-listener: no apiKey configured — service not starting");
