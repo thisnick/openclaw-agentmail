@@ -1,0 +1,64 @@
+{
+  "id": "agentmail-listener",
+  "name": "AgentMail Listener",
+  "description": "Background service that listens for incoming emails via AgentMail WebSocket and injects system events so the agent can respond.",
+  "version": "0.1.0",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["apiKey", "inboxId"],
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Your AgentMail API key (from agentmail.to dashboard)."
+      },
+      "inboxId": {
+        "type": "string",
+        "minLength": 1,
+        "description": "The inbox email address to subscribe to (e.g. nickbot@agentmail.to)."
+      },
+      "eventTypes": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "message.received",
+            "message.sent",
+            "message.delivered",
+            "message.bounced",
+            "message.complained",
+            "message.rejected",
+            "domain.verified"
+          ]
+        },
+        "description": "AgentMail event types to subscribe to. Defaults to [\"message.received\"] if omitted.",
+        "default": ["message.received"]
+      },
+      "sessionKey": {
+        "type": "string",
+        "description": "Agent session key to deliver system events to. Defaults to \"main\" (the primary agent session).",
+        "default": "main"
+      }
+    }
+  },
+  "uiHints": {
+    "apiKey": {
+      "label": "AgentMail API Key",
+      "placeholder": "am_us_...",
+      "sensitive": true
+    },
+    "inboxId": {
+      "label": "Inbox Email",
+      "placeholder": "yourbot@agentmail.to"
+    },
+    "eventTypes": {
+      "label": "Event Types",
+      "placeholder": "message.received"
+    },
+    "sessionKey": {
+      "label": "Agent Session Key",
+      "placeholder": "main"
+    }
+  }
+}
