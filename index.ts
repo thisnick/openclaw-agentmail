@@ -172,10 +172,6 @@ async function connectWithBackoff(
       // The close event will fire next and handle reconnect.
     });
 
-    // Reset attempt counter on successful connection
-    // (we do this by catching a successful open via the "open" handler above)
-    attempt = 0; // eslint-disable-line no-param-reassign
-
   } catch (err) {
     api.logger.error(`agentmail-listener: failed to connect: ${String(err)}`);
     currentSocket = null;
@@ -245,26 +241,15 @@ function handleEvent(api: OpenClawPluginApi, cfg: AgentMailConfig, event: WebSoc
         sessionKey: cfg.sessionKey ?? "agent:main:main",
         contextKey: `agentmail:${messageId}`,
       });
-      // Trigger an immediate heartbeat so the agent processes the event now.
       // enqueueSystemEvent only queues — it doesn't wake the heartbeat runner.
-      // We need requestHeartbeatNow which isn't exposed on the plugin API.
-      // Access it from the runtime's internal exports if available.
-      const rhbn = (api.runtime as any)?.requestHeartbeatNow
-        ?? (api.runtime as any)?.system?.requestHeartbeatNow;
-      if (typeof rhbn === "function") {
-        rhbn({ reason: "agentmail:new-email" });
-        api.logger.info("agentmail-listener: heartbeat wake requested");
-      } else {
-        // Last resort: shell out to CLI
-        try {
-          require("child_process").execSync(
-            'node /app/openclaw.mjs system event --text "📧 New email — check agentmail inbox" --mode now',
-            { timeout: 5000, stdio: "ignore" }
-          );
-          api.logger.info("agentmail-listener: triggered wake via CLI");
-        } catch {
-          api.logger.warn("agentmail-listener: could not trigger heartbeat wake");
-        }
+      // Trigger an immediate heartbeat via CLI so the agent processes it now.
+      try {
+        require("child_process").execSync(
+          'node /app/openclaw.mjs system event --text "📧 New email — check agentmail inbox" --mode now',
+          { timeout: 5000, stdio: "ignore" }
+        );
+      } catch {
+        api.logger.warn("agentmail-listener: could not trigger heartbeat wake");
       }
     } catch (err) {
       api.logger.error(`agentmail-listener: failed to enqueue system event: ${String(err)}`);
