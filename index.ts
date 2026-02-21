@@ -253,7 +253,7 @@ function handleEvent(api: OpenClawPluginApi, cfg: AgentMailConfig, event: WebSoc
   if (event.type === "error") {
     const errorEvent = event as AgentMail.Error_;
     api.logger.error(
-      `agentmail-listener: server error: ${(errorEvent as unknown as { message?: string }).message ?? JSON.stringify(errorEvent)}`,
+      `agentmail-listener: server error [${errorEvent.name}]: ${errorEvent.message}`,
     );
   }
 }
