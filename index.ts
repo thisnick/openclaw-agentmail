@@ -241,11 +241,15 @@ function handleEvent(api: OpenClawPluginApi, cfg: AgentMailConfig, event: WebSoc
     );
 
     try {
-      api.runtime.system.enqueueSystemEvent(eventText, {
+      api.logger.info(`agentmail-listener: runtime keys: ${Object.keys(api.runtime || {}).join(', ')}`);
+      api.logger.info(`agentmail-listener: runtime.system keys: ${Object.keys((api.runtime as any)?.system || {}).join(', ')}`);
+      api.logger.info(`agentmail-listener: typeof enqueueSystemEvent: ${typeof (api.runtime as any)?.system?.enqueueSystemEvent}`);
+      (api.runtime as any).system.enqueueSystemEvent(eventText, {
         sessionKey: cfg.sessionKey ?? "agent:main:main",
         contextKey: `agentmail:${messageId}`,
         wakeMode: "now",
       });
+      api.logger.info(`agentmail-listener: system event enqueued successfully`);
     } catch (err) {
       api.logger.error(`agentmail-listener: failed to enqueue system event: ${String(err)}`);
     }
