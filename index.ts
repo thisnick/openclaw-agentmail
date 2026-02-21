@@ -127,7 +127,9 @@ async function connectWithBackoff(
     // We pass reconnectAttempts=0 so the SDK does NOT auto-reconnect;
     // instead we handle reconnection ourselves so we can re-subscribe
     // and log properly.
-    const socket = await client.websockets.connect({ reconnectAttempts: 0 });
+    // Pass apiKey as query param — Node's native WebSocket doesn't support
+    // custom headers, so the auth header alone won't work in Node.js.
+    const socket = await client.websockets.connect({ reconnectAttempts: 0, apiKey: cfg.apiKey });
     currentSocket = socket;
 
     socket.on("open", () => {
