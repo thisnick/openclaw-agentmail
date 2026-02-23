@@ -8,7 +8,7 @@
  * system events for the agent to notice and decide what to do.
  */
 
-import type { OpenClawPluginApi } from "openclaw/plugin-sdk";
+import type { OpenClawPluginApi, PluginRuntime } from "openclaw/plugin-sdk";
 import { AgentMailClient } from "agentmail";
 import type { AgentMail } from "agentmail";
 
@@ -237,7 +237,7 @@ function handleEvent(api: OpenClawPluginApi, cfg: AgentMailConfig, event: WebSoc
     );
 
     try {
-      (api.runtime as any).system.enqueueSystemEvent(eventText, {
+      api.runtime.system.enqueueSystemEvent(eventText, {
         sessionKey: cfg.sessionKey ?? "agent:main:main",
         contextKey: `agentmail:${messageId}`,
       });
