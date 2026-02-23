@@ -54,7 +54,7 @@ export default function register(api: OpenClawPluginApi): void {
         apiKey: cfg.apiKey,
         inboxId: cfg.inboxId,
         eventTypes: cfg.eventTypes ?? ["message.received"],
-        sessionKey: cfg.sessionKey ?? "main",
+        sessionKey: cfg.sessionKey ?? "agent:main:main",
       };
 
       startListener(api, pluginCfg);
