@@ -1,5 +1,11 @@
 # openclaw-agentmail-listener
 
+## 0.2.2
+
+### Patch Changes
+
+- [`0b1e2cd`](https://github.com/thisnick/openclaw-agentmail/commit/0b1e2cdfed445666971ad1e60ef72ec226a07787) Thanks [@thisnick](https://github.com/thisnick)! - Wake heartbeat immediately on new email via Gateway HTTP API, so agent processes events without waiting for next scheduled poll
+
 ## 0.2.1
 
 ### Patch Changes
