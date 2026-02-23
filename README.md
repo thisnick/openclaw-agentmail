@@ -56,7 +56,7 @@ Add to your OpenClaw config under `plugins.entries.agentmail-listener.config`:
 {
   "plugins": {
     "entries": {
-      "agentmail-listener": {
+      "openclaw-agentmail-listener": {
         "enabled": true,
         "config": {
           "apiKey": "am_us_your_key_here",

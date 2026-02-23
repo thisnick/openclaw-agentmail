@@ -1,5 +1,5 @@
 {
-  "id": "agentmail-listener",
+  "id": "openclaw-agentmail-listener",
   "name": "AgentMail Listener",
   "description": "Background service that listens for incoming emails via AgentMail WebSocket and injects system events so the agent can respond.",
   "version": "0.1.0",
