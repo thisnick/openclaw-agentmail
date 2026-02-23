@@ -1,5 +1,15 @@
 # openclaw-agentmail-listener
 
+## 0.2.0
+
+### Minor Changes
+
+- [`7912101`](https://github.com/thisnick/openclaw-agentmail/commit/79121019c7c5cf493538c85b255854db59ce02b4) Thanks [@thisnick](https://github.com/thisnick)! - Align plugin structure with agent-wechat patterns: ESM format, proper openclaw devDep for types, move changesets to devDeps, remove as-any casts, add publishConfig provenance
+
+### Patch Changes
+
+- [`30a771d`](https://github.com/thisnick/openclaw-agentmail/commit/30a771d881dab85ba520a02b2e102ae75cd1c79c) Thanks [@thisnick](https://github.com/thisnick)! - Fix default sessionKey: use "agent:main:main" instead of "main" so events are delivered to the correct session queue
+
 ## 0.1.4
 
 ### Patch Changes
