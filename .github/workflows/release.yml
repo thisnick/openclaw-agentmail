@@ -37,7 +37,8 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: npm publish --provenance --access public || true
+          publish: npm publish --access public
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
