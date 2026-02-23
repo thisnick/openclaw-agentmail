@@ -1,5 +1,11 @@
 # openclaw-agentmail-listener
 
+## 0.1.4
+
+### Patch Changes
+
+- [`9d6ef94`](https://github.com/thisnick/openclaw-agentmail/commit/9d6ef94789d88883dc0ebdc1a2c562e5425082d8) Thanks [@thisnick](https://github.com/thisnick)! - Remove unreliable shell-based heartbeat wake; rely on enqueueSystemEvent only
+
 ## 0.1.3
 
 ### Patch Changes
