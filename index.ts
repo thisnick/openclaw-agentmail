@@ -241,6 +241,26 @@ function handleEvent(api: OpenClawPluginApi, cfg: AgentMailConfig, event: WebSoc
         sessionKey: cfg.sessionKey ?? "agent:main:main",
         contextKey: `agentmail:${messageId}`,
       });
+      // Wake the heartbeat so the agent processes the event immediately.
+      // We call the Gateway's own cron wake endpoint via localhost HTTP.
+      // This is reliable and avoids importing internal APIs.
+      try {
+        const port = (api as any).config?.gateway?.port ?? 18789;
+        const token = (api as any).config?.gateway?.auth?.token ?? process.env.OPENCLAW_GATEWAY_TOKEN;
+        if (token) {
+          const url = `http://127.0.0.1:${port}/tools/invoke`;
+          const body = JSON.stringify({ tool: "cron", args: { action: "wake", mode: "now", text: `📧 Email from ${from}: ${subject}` } });
+          fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body,
+          }).catch(() => {
+            // Best effort — if it fails, event will be picked up on next heartbeat
+          });
+        }
+      } catch {
+        // Best effort
+      }
     } catch (err) {
       api.logger.error(`agentmail-listener: failed to enqueue system event: ${String(err)}`);
     }
