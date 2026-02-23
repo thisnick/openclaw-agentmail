@@ -1,4 +1,4 @@
-# openclaw-agentmail
+# openclaw-agentmail-listener
 
 An [OpenClaw](https://openclaw.dev) plugin that listens for incoming emails via [AgentMail](https://agentmail.to) WebSocket and injects system events so your AI agent can act on them.
 
@@ -15,19 +15,24 @@ This is **not** a channel plugin — it doesn't handle replies. It just triggers
 
 ## Installation
 
-### Option 1: Install from GitHub
+### Option 1: Install from npm (recommended)
 
 ```bash
-# Clone and install locally
+openclaw plugins install openclaw-agentmail-listener
+```
+
+Restart the gateway afterwards.
+
+### Option 2: Install from GitHub
+
+```bash
 git clone https://github.com/thisnick/openclaw-agentmail ~/.openclaw/extensions/agentmail-listener
 cd ~/.openclaw/extensions/agentmail-listener
 npm install
-
-# Restart the gateway
 openclaw gateway restart
 ```
 
-### Option 2: Load via config path
+### Option 3: Load via config path
 
 In your OpenClaw config (`~/.openclaw/openclaw.json`):
 
