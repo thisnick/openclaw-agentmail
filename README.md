@@ -1,6 +1,6 @@
 # openclaw-agentmail-listener
 
-An [OpenClaw](https://openclaw.dev) plugin that listens for incoming emails via [AgentMail](https://agentmail.to) WebSocket and injects system events so your AI agent can act on them.
+An [OpenClaw](https://openclaw.ai) plugin that listens for incoming emails via [AgentMail](https://agentmail.to) WebSocket and injects system events so your AI agent can act on them.
 
 ## What it does
 
