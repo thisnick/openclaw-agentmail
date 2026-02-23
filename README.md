@@ -62,7 +62,7 @@ Add to your OpenClaw config under `plugins.entries.agentmail-listener.config`:
           "apiKey": "am_us_your_key_here",
           "inboxId": "yourbot@agentmail.to",
           "eventTypes": ["message.received"],
-          "sessionKey": "main"
+          "sessionKey": "agent:main:main"
         }
       }
     }
@@ -77,7 +77,7 @@ Add to your OpenClaw config under `plugins.entries.agentmail-listener.config`:
 | `apiKey` | string | ✅ | — | Your AgentMail API key |
 | `inboxId` | string | ✅ | — | Inbox to subscribe (e.g. `nickbot@agentmail.to`) |
 | `eventTypes` | string[] | — | `["message.received"]` | Event types to subscribe to |
-| `sessionKey` | string | — | `"main"` | Agent session key for routing system events |
+| `sessionKey` | string | — | `"agent:main:main"` | Agent session key for routing system events |
 
 ## System event format
 
