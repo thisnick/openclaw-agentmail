@@ -1,5 +1,11 @@
 # openclaw-agentmail-listener
 
+## 0.3.0
+
+### Minor Changes
+
+- [`4aa1381`](https://github.com/thisnick/openclaw-agentmail/commit/4aa138119f937e6e9771f75774266683f473af6d) Thanks [@thisnick](https://github.com/thisnick)! - Wake agent immediately on new email instead of waiting for heartbeat poll. Configurable via `wake` option: `"tools-invoke"` (default), `"hooks"`, or `"off"`.
+
 ## 0.2.1
 
 ### Patch Changes
