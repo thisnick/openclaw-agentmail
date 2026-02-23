@@ -1,5 +1,11 @@
 # openclaw-agentmail-listener
 
+## 0.2.1
+
+### Patch Changes
+
+- [`9f01d6e`](https://github.com/thisnick/openclaw-agentmail/commit/9f01d6ed8d9c80a244f90d28c1931edd5eb62a33) Thanks [@thisnick](https://github.com/thisnick)! - Fix default sessionKey and OpenClaw URL in README
+
 ## 0.2.0
 
 ### Minor Changes
