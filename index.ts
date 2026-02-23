@@ -241,16 +241,6 @@ function handleEvent(api: OpenClawPluginApi, cfg: AgentMailConfig, event: WebSoc
         sessionKey: cfg.sessionKey ?? "agent:main:main",
         contextKey: `agentmail:${messageId}`,
       });
-      // enqueueSystemEvent only queues — it doesn't wake the heartbeat runner.
-      // Trigger an immediate heartbeat via CLI so the agent processes it now.
-      try {
-        require("child_process").execSync(
-          'node /app/openclaw.mjs system event --text "📧 New email — check agentmail inbox" --mode now',
-          { timeout: 5000, stdio: "ignore" }
-        );
-      } catch {
-        api.logger.warn("agentmail-listener: could not trigger heartbeat wake");
-      }
     } catch (err) {
       api.logger.error(`agentmail-listener: failed to enqueue system event: ${String(err)}`);
     }
