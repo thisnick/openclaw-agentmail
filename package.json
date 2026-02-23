@@ -1,6 +1,6 @@
 {
   "name": "openclaw-agentmail-listener",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "type": "module",
   "description": "OpenClaw plugin: AgentMail listener — injects system events when emails arrive",
   "files": [
