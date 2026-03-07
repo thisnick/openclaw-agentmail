@@ -67,7 +67,26 @@ The event is keyed with `contextKey: agentmail:<messageId>` to deduplicate repea
 
 ## How wake works
 
-After enqueuing a system event, the plugin calls `requestHeartbeatNow()` from the OpenClaw plugin SDK with reason `"wake"`. This bypasses heartbeat file gates and triggers an immediate agent turn so the email is processed right away — no waiting for the next scheduled heartbeat.
+After enqueuing a system event, the plugin calls `requestHeartbeatNow()` from the OpenClaw plugin SDK with reason `"wake"`. This bypasses heartbeat file gates and triggers an immediate heartbeat turn so the email is processed right away — no waiting for the next scheduled heartbeat.
+
+**Important config for proactive delivery:**
+
+The heartbeat `target` must be set to a channel (e.g. `"whatsapp"`, `"telegram"`) or `"last"` — otherwise the agent processes the email but the response is silently dropped (default target is `"none"`).
+
+```json
+{
+  "agents": {
+    "defaults": {
+      "heartbeat": {
+        "every": "1h",
+        "target": "whatsapp"
+      }
+    }
+  }
+}
+```
+
+**Note:** The `requests-in-flight` check is global — if any conversation is active on any channel, the wake is deferred (retries every 1s until the queue clears).
 
 ## Architecture
 
