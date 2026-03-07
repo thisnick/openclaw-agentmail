@@ -18,34 +18,35 @@ jobs:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
+          registry-url: "https://registry.npmjs.org"
 
       # npm >= 11.5.1 required for OIDC trusted publishing
       - run: npm install -g npm@latest
 
-      - name: Install dependencies
-        run: npm ci
+      - run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
 
       - name: Create Release Pull Request
         id: changesets
         uses: changesets/action@v1
+        with:
+          version: pnpm changeset version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Publish with OIDC trusted publishing (no npm token needed)
       - name: Publish to npm
         if: steps.changesets.outputs.hasChangesets == 'false'
-        run: |
-          unset NODE_AUTH_TOKEN
-          unset NPM_CONFIG_USERCONFIG
-          npm config set registry https://registry.npmjs.org
-          npm publish --access public --provenance
+        run: pnpm changeset publish
+        env:
+          NPM_CONFIG_PROVENANCE: "true"
