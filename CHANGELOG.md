@@ -1,5 +1,19 @@
 # openclaw-agentmail-listener
 
+## 0.4.0
+
+### Minor Changes
+
+- [#24](https://github.com/thisnick/openclaw-agentmail/pull/24) [`e8a1f07`](https://github.com/thisnick/openclaw-agentmail/commit/e8a1f07695e1ed93742a1676de0f9670480ae3f1) Thanks [@thisnick](https://github.com/thisnick)! - Replace AgentMail SDK websocket client with raw `ws` connection
+
+  The SDK's `ReconnectingWebSocket` wrapper has a race condition where the `open`
+  event fires before `connect()` resolves, causing the plugin to miss the event
+  and never subscribe to inbox notifications.
+
+  This replaces the SDK dependency entirely with a direct WebSocket connection to
+  `wss://ws.agentmail.to/v0`, implementing our own subscribe, reconnect with
+  backoff, and keepalive pings. Bundle size drops from ~250kb to 9kb.
+
 ## 0.3.2
 
 ### Patch Changes
