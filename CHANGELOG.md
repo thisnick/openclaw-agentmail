@@ -1,5 +1,13 @@
 # openclaw-agentmail-listener
 
+## 0.3.2
+
+### Patch Changes
+
+- [#20](https://github.com/thisnick/openclaw-agentmail/pull/20) [`a1b15e4`](https://github.com/thisnick/openclaw-agentmail/commit/a1b15e4ba8e9edc6da4774ea2546acb777a6b67d) Thanks [@thisnick](https://github.com/thisnick)! - Switch to pnpm and OIDC trusted publishing
+
+- [#14](https://github.com/thisnick/openclaw-agentmail/pull/14) [`8cc3e11`](https://github.com/thisnick/openclaw-agentmail/commit/8cc3e11d14b17bdee6c06ed518d36dfb46b59636) Thanks [@thisnick](https://github.com/thisnick)! - Gracefully handle missing or invalid plugin config instead of crashing. The plugin now validates config types, logs actionable warnings, and skips startup when required fields are missing or malformed.
+
 ## 0.3.1
 
 ### Patch Changes
