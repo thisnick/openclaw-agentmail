@@ -26,7 +26,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          registry-url: "https://registry.npmjs.org"
+          registry-url: https://registry.npmjs.org
 
       # npm >= 11.5.1 required for OIDC trusted publishing
       - run: npm install -g npm@latest
