@@ -1,5 +1,11 @@
 # openclaw-agentmail-listener
 
+## 0.3.1
+
+### Patch Changes
+
+- [#11](https://github.com/thisnick/openclaw-agentmail/pull/11) [`1f78bf4`](https://github.com/thisnick/openclaw-agentmail/commit/1f78bf4d30d8f5bafa8b9177f8dbf1cbfee7274a) Thanks [@thisnick](https://github.com/thisnick)! - Update agentmail SDK to 0.4.2 and openclaw to 2026.3.2
+
 ## 0.3.0
 
 ### Minor Changes
