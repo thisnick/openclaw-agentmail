@@ -38,13 +38,13 @@
     "provenance": true
   },
   "dependencies": {
-    "agentmail": "^0.2.17"
+    "agentmail": "^0.4.2"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.2",
     "@changesets/cli": "^2.29.8",
     "esbuild": "^0.25.0",
-    "openclaw": "^2026.2.22",
+    "openclaw": "^2026.3.2",
     "typescript": "^5.4.5"
   }
 }
