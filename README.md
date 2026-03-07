@@ -5,17 +5,17 @@ An [OpenClaw](https://openclaw.ai) plugin that listens for incoming emails via [
 ## What it does
 
 - Registers a background service at gateway startup
-- Connects to AgentMail via WebSocket
+- Connects to AgentMail via raw WebSocket (`wss://ws.agentmail.to/v0`)
 - Subscribes to a configured inbox (e.g. `nickbot@agentmail.to`)
-- When a `message.received` event fires, injects a system event via `core.system.enqueueSystemEvent()` with email metadata (from, subject, preview)
+- When a `message.received` event fires, injects a system event with email metadata (from, subject, preview)
+- Wakes the agent immediately via `requestHeartbeatNow()` so emails are processed right away
 - Auto-reconnects with exponential backoff on disconnect
+- Keepalive pings every 30 seconds
 - Stops cleanly when the gateway shuts down
 
 This is **not** a channel plugin — it doesn't handle replies. It just triggers system events so the agent notices new emails and can decide what to do (e.g. read the full message via the AgentMail skill and reply).
 
 ## Installation
-
-### Option 1: Install from npm (recommended)
 
 ```bash
 openclaw plugins install openclaw-agentmail-listener
@@ -23,34 +23,9 @@ openclaw plugins install openclaw-agentmail-listener
 
 Restart the gateway afterwards.
 
-### Option 2: Install from GitHub
-
-```bash
-git clone https://github.com/thisnick/openclaw-agentmail ~/.openclaw/extensions/agentmail-listener
-cd ~/.openclaw/extensions/agentmail-listener
-npm install
-openclaw gateway restart
-```
-
-### Option 3: Load via config path
-
-In your OpenClaw config (`~/.openclaw/openclaw.json`):
-
-```json
-{
-  "plugins": {
-    "load": {
-      "paths": ["/path/to/openclaw-agentmail"]
-    }
-  }
-}
-```
-
-Then run `npm install` in the plugin directory and restart the gateway.
-
 ## Configuration
 
-Add to your OpenClaw config under `plugins.entries.agentmail-listener.config`:
+Add to your OpenClaw config under `plugins.entries`:
 
 ```json
 {
@@ -60,9 +35,7 @@ Add to your OpenClaw config under `plugins.entries.agentmail-listener.config`:
         "enabled": true,
         "config": {
           "apiKey": "am_us_your_key_here",
-          "inboxId": "yourbot@agentmail.to",
-          "eventTypes": ["message.received"],
-          "sessionKey": "agent:main:main"
+          "inboxId": "yourbot@agentmail.to"
         }
       }
     }
@@ -78,7 +51,6 @@ Add to your OpenClaw config under `plugins.entries.agentmail-listener.config`:
 | `inboxId` | string | ✅ | — | Inbox to subscribe (e.g. `nickbot@agentmail.to`) |
 | `eventTypes` | string[] | — | `["message.received"]` | Event types to subscribe to |
 | `sessionKey` | string | — | `"agent:main:main"` | Agent session key for routing system events |
-| `wake` | string | — | `"tools-invoke"` | Wake method: `"tools-invoke"` (default), `"hooks"`, or `"off"` |
 
 ## System event format
 
@@ -93,31 +65,21 @@ Preview: This is the first 200 chars of the email body...
 
 The event is keyed with `contextKey: agentmail:<messageId>` to deduplicate repeated events for the same message.
 
-## Instant wake
+## How wake works
 
-By default, system events are only processed when the agent's heartbeat fires (which can be up to 1 hour). This plugin triggers an **immediate wake** after enqueuing each email event by calling the gateway's cron wake endpoint (`POST /tools/invoke`).
+After enqueuing a system event, the plugin calls `requestHeartbeatNow()` from the OpenClaw plugin SDK with reason `"wake"`. This bypasses heartbeat file gates and triggers an immediate agent turn so the email is processed right away — no waiting for the next scheduled heartbeat.
 
-### Wake methods
+## Architecture
 
-| Method | Auth | When to use |
-|--------|------|-------------|
-| `tools-invoke` (default) | `gateway.auth.token` | Works out of the box, no extra config |
-| `hooks` | `hooks.token` | If you already have hooks enabled |
-| `off` | — | Disable wake; rely on heartbeat polling |
-
-The plugin reads port and token from your OpenClaw config automatically.
-
-## Architecture notes
-
-- The plugin uses the `agentmail` npm package's WebSocket client
-- Reconnection uses exponential backoff (1s → 2s → 4s → ... → 60s max) with ±10% jitter
-- Re-subscription happens automatically on each reconnect (WebSocket `open` event)
-- Uses `api.runtime.system.enqueueSystemEvent()` to route events to the agent session
-- After enqueuing, triggers an immediate agent wake via the gateway's `/tools/invoke` endpoint (cron wake action) so the agent processes the email right away instead of waiting for the next heartbeat poll
+- **Raw WebSocket** — connects directly to `wss://ws.agentmail.to/v0` with API key as query param (no SDK dependency for the WebSocket layer)
+- **Reconnection** — exponential backoff (1s → 2s → 4s → ... → 60s max) with ±10% jitter
+- **Keepalive** — sends WebSocket pings every 30 seconds
+- **In-process wake** — uses `api.runtime.system.requestHeartbeatNow()` (no HTTP round-trips)
+- **System events** — uses `api.runtime.system.enqueueSystemEvent()` to route to the agent session
 
 ## Dependencies
 
-- `agentmail` ^0.2.17 — AgentMail TypeScript SDK
+- `ws` ^8.18.0 — WebSocket client for Node.js
 
 ## License
 

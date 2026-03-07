@@ -1,5 +1,15 @@
 # openclaw-agentmail-listener
 
+## 0.4.2
+
+### Patch Changes
+
+- Fix heartbeat wake reason and update README
+
+  - Use `"wake"` as heartbeat reason to bypass file gates (was using custom string that resolved to "other")
+  - Update README to reflect raw WebSocket architecture and removal of wake config
+  - Remove references to agentmail SDK dependency and HTTP wake methods
+
 ## 0.4.1
 
 ### Patch Changes
