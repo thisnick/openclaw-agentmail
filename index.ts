@@ -48,15 +48,40 @@ export default function register(api: OpenClawPluginApi): void {
   api.registerService({
     id: "agentmail-listener",
     start: async () => {
-      const cfg = (api.pluginConfig ?? api.config) as { apiKey?: string; inboxId?: string; eventTypes?: string[]; sessionKey?: string; wake?: string } | undefined;
-
-      if (!cfg?.apiKey) {
-        api.logger.warn("agentmail-listener: no apiKey configured — service not starting");
+      let cfg: Record<string, unknown> | undefined;
+      try {
+        cfg = (api.pluginConfig ?? api.config) as Record<string, unknown> | undefined;
+      } catch (err) {
+        api.logger.error(`agentmail-listener: failed to read plugin config — service not starting: ${String(err)}`);
         return;
       }
-      if (!cfg?.inboxId) {
-        api.logger.warn("agentmail-listener: no inboxId configured — service not starting");
+
+      if (!cfg || typeof cfg !== "object") {
+        api.logger.warn("agentmail-listener: no config provided — service not starting");
         return;
+      }
+
+      if (!cfg.apiKey || typeof cfg.apiKey !== "string") {
+        api.logger.warn(
+          `agentmail-listener: apiKey is ${cfg.apiKey === undefined ? "missing" : "not a string"} — service not starting. ` +
+          "Set plugins.entries.openclaw-agentmail-listener.config.apiKey in your OpenClaw config.",
+        );
+        return;
+      }
+      if (!cfg.inboxId || typeof cfg.inboxId !== "string") {
+        api.logger.warn(
+          `agentmail-listener: inboxId is ${cfg.inboxId === undefined ? "missing" : "not a string"} — service not starting. ` +
+          "Set plugins.entries.openclaw-agentmail-listener.config.inboxId in your OpenClaw config.",
+        );
+        return;
+      }
+
+      if (cfg.eventTypes !== undefined && !Array.isArray(cfg.eventTypes)) {
+        api.logger.warn("agentmail-listener: eventTypes must be an array — ignoring invalid value");
+      }
+
+      if (cfg.sessionKey !== undefined && typeof cfg.sessionKey !== "string") {
+        api.logger.warn("agentmail-listener: sessionKey must be a string — using default");
       }
 
       const wakeMode = (cfg.wake === "hooks" || cfg.wake === "off") ? cfg.wake : "tools-invoke";
@@ -64,8 +89,8 @@ export default function register(api: OpenClawPluginApi): void {
       const pluginCfg: AgentMailConfig = {
         apiKey: cfg.apiKey,
         inboxId: cfg.inboxId,
-        eventTypes: cfg.eventTypes ?? ["message.received"],
-        sessionKey: cfg.sessionKey ?? "agent:main:main",
+        eventTypes: Array.isArray(cfg.eventTypes) ? cfg.eventTypes as string[] : ["message.received"],
+        sessionKey: typeof cfg.sessionKey === "string" ? cfg.sessionKey : "agent:main:main",
         wake: wakeMode,
       };
 
@@ -212,6 +237,14 @@ type WebSocketEvent =
   | AgentMail.Error_;
 
 function handleEvent(api: OpenClawPluginApi, cfg: AgentMailConfig, event: WebSocketEvent): void {
+  try {
+    handleEventInner(api, cfg, event);
+  } catch (err) {
+    api.logger.error(`agentmail-listener: unhandled error processing event: ${String(err)}`);
+  }
+}
+
+function handleEventInner(api: OpenClawPluginApi, cfg: AgentMailConfig, event: WebSocketEvent): void {
   // Log subscription confirmations
   if (event.type === "subscribed") {
     const subscribed = event as AgentMail.Subscribed;
@@ -281,7 +314,13 @@ function handleEvent(api: OpenClawPluginApi, cfg: AgentMailConfig, event: WebSoc
 async function wakeAgent(api: OpenClawPluginApi, mode: WakeMode, wakeText: string): Promise<void> {
   if (mode === "off") return;
 
-  const cfg = api.runtime.config.loadConfig();
+  let cfg: Record<string, any>;
+  try {
+    cfg = api.runtime.config.loadConfig();
+  } catch (err) {
+    api.logger.warn(`agentmail-listener: failed to load runtime config for wake — skipping wake: ${String(err)}`);
+    return;
+  }
   const port = cfg.gateway?.port ?? 18789;
 
   if (mode === "hooks") {
