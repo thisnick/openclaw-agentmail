@@ -1,5 +1,16 @@
 # openclaw-agentmail-listener
 
+## 0.4.1
+
+### Patch Changes
+
+- Use requestHeartbeatNow for agent wake instead of HTTP calls
+
+  Replace the HTTP-based wake mechanism (tools-invoke / hooks) with the
+  in-process `requestHeartbeatNow()` from the plugin SDK. The plugin runs
+  inside the gateway process, so HTTP round-trips are unnecessary. Removes
+  the `wake` config option.
+
 ## 0.4.0
 
 ### Minor Changes
