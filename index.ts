@@ -16,14 +16,11 @@ import WebSocket from "ws";
 // Config types (must match configSchema in openclaw.plugin.json)
 // ---------------------------------------------------------------------------
 
-type WakeMode = "tools-invoke" | "hooks" | "off";
-
 interface AgentMailConfig {
   apiKey: string;
   inboxId: string;
   eventTypes?: string[];
   sessionKey?: string;
-  wake?: WakeMode;
 }
 
 // ---------------------------------------------------------------------------
@@ -124,14 +121,11 @@ export default function register(api: OpenClawPluginApi): void {
         api.logger.warn("agentmail-listener: sessionKey must be a string — using default");
       }
 
-      const wakeMode = (cfg.wake === "hooks" || cfg.wake === "off") ? cfg.wake : "tools-invoke";
-
       const pluginCfg: AgentMailConfig = {
         apiKey: cfg.apiKey,
         inboxId: cfg.inboxId,
         eventTypes: Array.isArray(cfg.eventTypes) ? cfg.eventTypes as string[] : ["message.received"],
         sessionKey: typeof cfg.sessionKey === "string" ? cfg.sessionKey : "agent:main:main",
-        wake: wakeMode,
       };
 
       startListener(api, pluginCfg);
@@ -328,16 +322,18 @@ function handleEventInner(api: OpenClawPluginApi, cfg: AgentMailConfig, event: A
     );
 
     try {
+      const sessionKey = cfg.sessionKey ?? "agent:main:main";
       api.runtime.system.enqueueSystemEvent(eventText, {
-        sessionKey: cfg.sessionKey ?? "agent:main:main",
+        sessionKey,
         contextKey: `agentmail:${messageId}`,
       });
 
-      // Wake the agent immediately
-      const wakeText = "You have a new agentmail email. Check the pending system event for details.";
-      wakeAgent(api, cfg.wake ?? "tools-invoke", wakeText).catch((err) => {
-        api.logger.warn(`agentmail-listener: wake failed (event still queued): ${String(err)}`);
+      // Wake the agent immediately using the in-process heartbeat API
+      api.runtime.system.requestHeartbeatNow({
+        reason: "agentmail: new email",
+        sessionKey,
       });
+      api.logger.info("agentmail-listener: heartbeat wake requested");
     } catch (err) {
       api.logger.error(`agentmail-listener: failed to enqueue system event: ${String(err)}`);
     }
@@ -351,75 +347,6 @@ function handleEventInner(api: OpenClawPluginApi, cfg: AgentMailConfig, event: A
       `agentmail-listener: server error [${errorEvent.name ?? "unknown"}]: ${errorEvent.message ?? "no message"}`,
     );
   }
-}
-
-// ---------------------------------------------------------------------------
-// Agent wake via gateway HTTP API
-// ---------------------------------------------------------------------------
-
-async function wakeAgent(api: OpenClawPluginApi, mode: WakeMode, wakeText: string): Promise<void> {
-  if (mode === "off") return;
-
-  let cfg: Record<string, any>;
-  try {
-    cfg = api.runtime.config.loadConfig();
-  } catch (err) {
-    api.logger.warn(`agentmail-listener: failed to load runtime config for wake — skipping wake: ${String(err)}`);
-    return;
-  }
-  const port = cfg.gateway?.port ?? 18789;
-
-  if (mode === "hooks") {
-    const hooksToken = (cfg.hooks as { token?: string } | undefined)?.token;
-    if (!hooksToken) {
-      api.logger.warn("agentmail-listener: wake=hooks but no hooks.token configured");
-      return;
-    }
-    const hooksPath = ((cfg.hooks as { path?: string } | undefined)?.path ?? "/hooks").replace(/\/+$/, "");
-    const url = `http://127.0.0.1:${port}${hooksPath}/wake`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${hooksToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text: wakeText, mode: "now" }),
-    });
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      throw new Error(`hooks/wake returned ${res.status}: ${body}`);
-    }
-    api.logger.info("agentmail-listener: agent wake triggered via hooks");
-    return;
-  }
-
-  // Default: tools-invoke
-  const gatewayToken = (cfg.gateway?.auth as { token?: string } | undefined)?.token;
-  if (!gatewayToken) {
-    api.logger.warn("agentmail-listener: wake=tools-invoke but no gateway.auth.token configured");
-    return;
-  }
-  const url = `http://127.0.0.1:${port}/tools/invoke`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${gatewayToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      tool: "cron",
-      args: {
-        action: "wake",
-        text: wakeText,
-        mode: "now",
-      },
-    }),
-  });
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`tools/invoke cron wake returned ${res.status}: ${body}`);
-  }
-  api.logger.info("agentmail-listener: agent wake triggered via tools/invoke");
 }
 
 // ---------------------------------------------------------------------------

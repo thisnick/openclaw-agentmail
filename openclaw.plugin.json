@@ -39,12 +39,6 @@
         "type": "string",
         "description": "Agent session key to deliver system events to. Defaults to \"agent:main:main\".",
         "default": "agent:main:main"
-      },
-      "wake": {
-        "type": "string",
-        "enum": ["tools-invoke", "hooks", "off"],
-        "description": "How to wake the agent on new email. \"tools-invoke\" (default) uses gateway auth, \"hooks\" uses hooks.token, \"off\" disables wake.",
-        "default": "tools-invoke"
       }
     }
   },
@@ -65,10 +59,6 @@
     "sessionKey": {
       "label": "Agent Session Key",
       "placeholder": "agent:main:main"
-    },
-    "wake": {
-      "label": "Wake Method",
-      "placeholder": "tools-invoke"
     }
   }
 }
