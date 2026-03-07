@@ -25,7 +25,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: "https://registry.npmjs.org"
 
       # npm >= 11.5.1 required for OIDC trusted publishing
       - run: npm install -g npm@latest
@@ -45,4 +44,6 @@ jobs:
       # Publish separately so npm can use OIDC (no NODE_AUTH_TOKEN needed)
       - name: Publish to npm
         if: steps.changesets.outputs.hasChangesets == 'false'
-        run: npm publish --access public --provenance
+        run: |
+          echo "registry=https://registry.npmjs.org" > ~/.npmrc
+          npm publish --access public --provenance
