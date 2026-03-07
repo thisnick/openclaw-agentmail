@@ -25,6 +25,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          registry-url: "https://registry.npmjs.org"
 
       # npm >= 11.5.1 required for OIDC trusted publishing
       - run: npm install -g npm@latest
@@ -42,8 +43,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Publish separately so npm can use OIDC (no NODE_AUTH_TOKEN needed)
+      # Remove _authToken and always-auth from setup-node's .npmrc so npm falls back to OIDC
       - name: Publish to npm
         if: steps.changesets.outputs.hasChangesets == 'false'
         run: |
-          echo "registry=https://registry.npmjs.org" > ~/.npmrc
+          sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
+          sed -i '/always-auth/d' "$NPM_CONFIG_USERCONFIG"
           npm publish --access public --provenance
