@@ -9,7 +9,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "esbuild index.ts --bundle --format=esm --platform=node --outfile=dist/index.js --external:openclaw",
+    "build": "esbuild index.ts --bundle --format=esm --platform=node --outfile=dist/index.js --external:openclaw --external:@x402/fetch",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
