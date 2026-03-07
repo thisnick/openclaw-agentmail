@@ -329,8 +329,9 @@ function handleEventInner(api: OpenClawPluginApi, cfg: AgentMailConfig, event: A
       });
 
       // Wake the agent immediately using the in-process heartbeat API
+      // reason must be exactly "wake" to bypass file gates in heartbeat runner
       api.runtime.system.requestHeartbeatNow({
-        reason: "agentmail: new email",
+        reason: "wake",
         sessionKey,
       });
       api.logger.info("agentmail-listener: heartbeat wake requested");
