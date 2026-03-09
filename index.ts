@@ -325,13 +325,14 @@ function handleEventInner(api: OpenClawPluginApi, cfg: AgentMailConfig, event: A
       const sessionKey = cfg.sessionKey ?? "agent:main:main";
       api.runtime.system.enqueueSystemEvent(eventText, {
         sessionKey,
-        contextKey: `agentmail:${messageId}`,
+        contextKey: `cron:agentmail:${messageId}`,
       });
 
       // Wake the agent immediately using the in-process heartbeat API
-      // reason must be exactly "wake" to bypass file gates in heartbeat runner
+      // reason "exec-event" both bypasses file gates AND inspects pending
+      // system events (reason "wake" bypasses gates but skips event inspection)
       api.runtime.system.requestHeartbeatNow({
-        reason: "wake",
+        reason: "exec-event",
         sessionKey,
       });
       api.logger.info("agentmail-listener: heartbeat wake requested");

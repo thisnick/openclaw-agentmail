@@ -63,11 +63,18 @@ Subject: Hello there
 Preview: This is the first 200 chars of the email body...
 ```
 
-The event is keyed with `contextKey: agentmail:<messageId>` to deduplicate repeated events for the same message.
+The event is keyed with `contextKey: cron:agentmail:<messageId>` so it is both deduplicated and surfaced in the heartbeat prompt (see [How wake works](#how-wake-works) for details).
 
 ## How wake works
 
-After enqueuing a system event, the plugin calls `requestHeartbeatNow()` from the OpenClaw plugin SDK with reason `"wake"`. This bypasses heartbeat file gates and triggers an immediate heartbeat turn so the email is processed right away — no waiting for the next scheduled heartbeat.
+After enqueuing a system event, the plugin calls `requestHeartbeatNow()` with reason `"exec-event"`. This does two things:
+
+1. **Bypasses file gates** — the heartbeat fires immediately without requiring HEARTBEAT.md
+2. **Inspects pending events** — the enqueued system event is included in the heartbeat prompt
+
+The `cron:` prefix on the contextKey ensures the event passes through OpenClaw's `hasTaggedCronEvents` check, which enables event inspection and renders the email content via `buildCronEventPrompt`. Without this prefix, the event would be enqueued but silently discarded from the prompt.
+
+> **Why not `reason: "wake"`?** The `"wake"` reason bypasses file gates but does _not_ enable `shouldInspectPendingEvents` in the heartbeat runner, so system events are ignored. `"exec-event"` enables both.
 
 **Important config for proactive delivery:**
 
@@ -93,8 +100,8 @@ The heartbeat `target` must be set to a channel (e.g. `"whatsapp"`, `"telegram"`
 - **Raw WebSocket** — connects directly to `wss://ws.agentmail.to/v0` with API key as query param (no SDK dependency for the WebSocket layer)
 - **Reconnection** — exponential backoff (1s → 2s → 4s → ... → 60s max) with ±10% jitter
 - **Keepalive** — sends WebSocket pings every 30 seconds
-- **In-process wake** — uses `api.runtime.system.requestHeartbeatNow()` (no HTTP round-trips)
-- **System events** — uses `api.runtime.system.enqueueSystemEvent()` to route to the agent session
+- **In-process wake** — uses `api.runtime.system.requestHeartbeatNow()` with `reason: "exec-event"` (no HTTP round-trips)
+- **System events** — uses `api.runtime.system.enqueueSystemEvent()` with `cron:`-prefixed contextKey to ensure prompt visibility
 
 ## Dependencies
 
